@@ -1,0 +1,4 @@
+boto3==1.35.50
+Flask==3.0.3
+plotly==5.24.1
+python-dotenv==1.0.1
