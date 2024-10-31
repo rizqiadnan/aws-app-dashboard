@@ -9,23 +9,58 @@
     <script src="https://cdn.plot.ly/plotly-latest.min.js"></script>
 </head>
 <body>
-    <h1>AWS EC2 Instances</h1>
-    <ul>
-        {% for instance in instances %}
-            <li>
-                ID: {{ instance.InstanceId }} - Type: {{ instance.InstanceType }} - State: {{ instance.State }}
-                <a href="/metrics/{{ instance.InstanceId }}">View Metrics</a>
-            </li>
-        {% endfor %}
-    </ul>
+    <header>
+        <h1>AWS EC2 Instances List</h1>
+    </header>
 
-    <h2>Metrics Dashboard</h2>
-    <div id="metrics-graph"></div>
-    {% if graph_json %}
-    <script type="text/javascript">
-        var graphJSON = {{ graph_json | safe }};
-        Plotly.newPlot('metrics-graph', graphJSON.data, graphJSON.layout);
-    </script>
-    {% endif %}
+    <main>
+        <section id="ec2-instances">
+            <h2>EC2 Instances</h2>
+            <ul>
+                {% for instance in instances %}
+                    <li>
+                        ID: <strong>{{ instance.InstanceId }}</strong> - 
+                        Type: <strong>{{ instance.InstanceType }}</strong> - 
+                        State: <strong>{{ instance.State }}</strong> - 
+                        <!-- Launch Time: <strong>{{ instance.LaunchTime }}</strong> -  -->
+                        Arch: <strong>{{ instance.Architecture }}</strong> - 
+                        <a href="/metrics/{{ instance.InstanceId }}">View Metrics</a>
+                    </li>
+                {% endfor %}
+            </ul>
+        </section>
+
+        <!-- Uncomment this section to display RDS Instances -->
+        
+        <section id="rds-instances">
+            <h2>AWS RDS Instances List</h2>
+            <ul>
+                {% for rds in rds %}
+                    <li>
+                        ID: <strong>{{ rds.InstanceId }}</strong> - 
+                        Type: <strong>{{ rds.InstanceType }}</strong> - 
+                        State: <strong>{{ rds.State }}</strong> - 
+                        <a href="/metrics/{{ rds.InstanceId }}">View Metrics</a>
+                    </li>
+                {% endfor %}
+            </ul>
+        </section>
+       
+
+        <section id="metrics-dashboard">
+            <h2>Metrics Dashboard</h2>
+            <div id="metrics-graph"></div>
+            {% if graph_json %}
+            <script type="text/javascript">
+                var graphJSON = {{ graph_json | safe }};
+                Plotly.newPlot('metrics-graph', graphJSON.data, graphJSON.layout);
+            </script>
+            {% endif %}
+        </section>
+    </main>
+
+    <footer>
+        <p>&copy; {{ current_year }} AWS Management Dashboard</p>
+    </footer>
 </body>
 </html>

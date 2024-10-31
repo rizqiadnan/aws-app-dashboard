@@ -12,7 +12,8 @@ def list_ec2_instances(ec2_client):
                 'InstanceId': instance['InstanceId'],
                 'InstanceType': instance['InstanceType'],
                 'State': instance['State']['Name'],
-                'LaunchTime': instance['LaunchTime']
+                'Architecture': instance['Architecture'],
+                # 'LaunchTime': instance['LaunchTime']
             })
     return instances
 
@@ -27,7 +28,12 @@ def get_cloudwatch_metrics(cloudwatch_client, instance_id):
                     'Metric': {
                         'Namespace': 'AWS/EC2',
                         'MetricName': 'CPUUtilization',
-                        'Dimensions': [{'Name': 'InstanceId', 'Value': instance_id}]
+                        'Dimensions': [
+                                {
+                                    'Name': 'InstanceId',
+                                    'Value': instance_id
+                            }
+                        ]
                     },
                     'Period': 300,
                     'Stat': 'Average'
@@ -35,7 +41,7 @@ def get_cloudwatch_metrics(cloudwatch_client, instance_id):
                 'ReturnData': True
             },
         ],
-        StartTime=now - timedelta(hours=1),
+        StartTime=now - timedelta(hours=2),
         EndTime=now
     )
     return response['MetricDataResults'][0]['Values']

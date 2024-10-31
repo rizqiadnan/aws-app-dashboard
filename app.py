@@ -1,43 +1,27 @@
 # app.py
-from flask import Flask, render_template, jsonify
-from dotenv import load_dotenv
-import os
-import boto3
-import plotly
-import plotly.graph_objs as go
-import json
-from aws_manager import list_ec2_instances, get_cloudwatch_metrics
+from flask import Flask
+from flask_sqlalchemy import SQLAlchemy
+from flask_login import LoginManager
+from config import Config
+from models import db
+from routes import main
 
-# Load environment variables from .env file
-load_dotenv()
-
-# Initialize AWS clients using environment variables
-session = boto3.Session(
-    aws_access_key_id=os.getenv('AWS_ACCESS_KEY_ID'),
-    aws_secret_access_key=os.getenv('AWS_SECRET_ACCESS_KEY'),
-    region_name=os.getenv('AWS_DEFAULT_REGION')
-)
-
-# Define AWS clients here
-ec2_client = session.client('ec2')
-cloudwatch_client = session.client('cloudwatch')
-
+# Flask Config
 app = Flask(__name__)
+app.config.from_object(Config)
+# app.secret_key = 'a387dea9ba6b4303c98dbe5b7d0d0854'
 
-@app.route('/')
-def home():
-    instances = list_ec2_instances(ec2_client)  # Pass ec2_client as an argument
-    return render_template('dashboard.html', instances=instances)
+# Register the routes
+app.register_blueprint(main)
 
-@app.route('/metrics/<instance_id>')
-def metrics(instance_id):
-    metric_data = get_cloudwatch_metrics(cloudwatch_client, instance_id)  # Pass cloudwatch_client as an argument
-    fig = go.Figure([go.Scatter(y=metric_data, mode='lines', name="CPU Utilization")])
-    fig.update_layout(title="EC2 Instance CPU Utilization",
-                      xaxis_title="Time (last hour)",
-                      yaxis_title="CPU %")
-    graph_json = json.dumps(fig, cls=plotly.utils.PlotlyJSONEncoder)
-    return render_template('dashboard.html', graph_json=graph_json)
+# Initialize database and login manager
+db.init_app(app)
+login_manager = LoginManager(app)
+login_manager.login_view = 'main.login' # Redirect to login page if not logged in
+
+@login_manager.user_loader
+def load_user(user_id):
+    return User.query.get(int(user_id))
 
 if __name__ == '__main__':
     app.run(debug=True)
